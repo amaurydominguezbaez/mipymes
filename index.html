@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIPYMES | Comunidad de Profesionales</title>
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Manifest & theme color -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#003580">
+  <style>
+    /* Paleta de colores */
+    :root {
+      --primary-blue: #002b5c;
+      --secondary-orange: #ff8c00;
+      --gray-light: #f5f5f5;
+      --text-dark: #333333;
+      --white: #ffffff;
+      --input-border: #c4c4c4;
+      --input-focus: #ff8c00;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', Arial, sans-serif; background: var(--gray-light); color: var(--text-dark); line-height: 1.6; }
+    header { background: var(--primary-blue); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo-container img { height: 40px; }
+    nav ul { list-style: none; display: flex; gap: 1rem; }
+    nav a { color: var(--white); text-decoration: none; font-weight: 600; }
+    main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+    section { background: var(--white); padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 2rem; opacity: 0; animation: fadeInUp 0.6s forwards; }
+    h2 { color: var(--primary-blue); margin-bottom: 1rem; font-size: 1.75rem; }
+
+    /* Forms */
+    .search-form, .booking-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1rem; }
+    input, select, textarea { padding: 0.75rem 1rem; border: 1px solid var(--input-border); border-radius: 0.5rem; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--input-focus); box-shadow: 0 0 0 3px rgba(255,140,0,0.2); outline: none; }
+
+    /* Buttons */
+    button { padding: 0.75rem 1.5rem; background: var(--secondary-orange); color: var(--white); border: none; border-radius: 2rem; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: background 0.3s, transform 0.2s; }
+    button:hover { background: var(--primary-blue); transform: translateY(-2px); }
+    button:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+    .avatar-preview { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-top: 0.5rem; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 1rem; }
+    .card { position: relative; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.3s, box-shadow 0.3s; }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    .card img { width: 100%; height: 150px; object-fit: cover; }
+    .card-body { padding: 1rem; }
+    .view-btn { position: absolute; top: 0.75rem; right: 0.75rem; background: var(--secondary-orange); color: #fff; border: none; border-radius: 50%; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+    /* Modal */
+    .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal-content { background: #fff; padding: 2rem; border-radius: 8px; max-width: 600px; width: 90%; animation: scaleIn 0.3s ease-out; }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; cursor: pointer; font-size: 1.5rem; }
+    #map { width: 100%; height: 200px; margin-top: 1rem; }
+
+    /* Calendar */
+    #calendar { max-width: 900px; margin: 0 auto; }
+
+    /* Banners */
+    .banner { margin: 1rem 0; background: var(--gray-light); text-align: center; padding: 1rem; border: 1px dashed var(--input-border); }
+
+    /* Footer */
+    footer { text-align: center; padding: 1rem; background: var(--primary-blue); color: var(--white); }
+    .social-menu-footer a { margin: 0 0.5rem; color: var(--white); font-size: 1.2rem; }
+
+    /* Animations */
+    @keyframes fadeInUp { from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);} }
+    @keyframes scaleIn { from { transform: scale(0.9); opacity: 0;} to { transform: scale(1); opacity: 1;} }
+
+    @media (max-width: 768px) { .search-form, .booking-form, #contacto form { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container"><img src="logo-mipymes.png" alt="Logo MIPYMES"></div>
+    <nav>
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#registro">Registro</a></li>
+        <li><a href="#perfiles">Perfiles</a></li>
+        <li><a href="#contacto">Contáctanos</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="#eventos">Eventos</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section id="inicio">
+      <h2>Busca tu profesional</h2>
+      <form class="search-form" id="busqueda-rapida">
+        <input list="professionals-list" id="search-name" placeholder="Nombre del profesional">
+        <datalist id="professionals-list"></datalist>
+        <select id="search-profession">
+          <option value="">Profesión</option>
+          <option>Abogado</option>
+          <option>Arquitecto</option>
+          <option>Ingeniero Civil</option>
+          <option>Ingeniero Eléctrico</option>
+          <option>Electricista</option>
+          <option>Plomero</option>
+          <option>Pintor</option>
+          <option>Pisero</option>
+          <option>Ebanista</option>
+          <option>Jardinero</option>
+          <option>Masajista</option>
+          <option>Chofer</option>
+          <option>Médico</option>
+          <option>Enfermero</option>
+          <option>Otro</option>
+        </select>
+        <select id="search-province">
+          <option value="">Provincia</option>
+          <option>Azua</option><option>Bahoruco</option><option>Barahona</option><option>Dajabón</option><option>Distrito Nacional</option><option>Duarte</option><option>Elías Piña</option><option>El Seibo</option><option>Espaillat</option><option>Hato Mayor</option><option>Hermanas Mirabal</option><option>Independencia</option><option>La Altagracia</option><option>La Romana</option><option>La Vega</option><option>María Trinidad Sánchez</option><option>Monseñor Nouel</option><option>Monte Cristi</option><option>Monte Plata</option><option>Pedernales</option><option>Peravia</option><option>Puerto Plata</option><option>Samaná</option><option>San Cristóbal</option><option>San José de Ocoa</option><option>San Juan</option><option>San Pedro de Macorís</option><option>Sánchez Ramírez</option><option>Santiago</option><option>Santiago Rodríguez</option><option>Valverde</option><option>Santo Domingo</option>
+        </select>
+        <button type="submit">Buscar</button>
+      </form>
+    </section>
+    <div class="banner">Publicidad 1: Tu anuncio aquí</div>
+    <section id="registro">
+      <h2>Registro de Profesionales</h2>
+      <form id="signup-form" class="booking-form">
+        <div class="full"><label>Foto de Perfil</label><input type="file" id="avatar"><img id="avatar-preview" class="avatar-preview" style="display:none;"></div>
+        <div><label>Nombre</label><input type="text" id="first-name" required></div>
+        <div><label>Apellido</label><input type="text" id="last-name" required></div>
+        <div><label>Profesión</label><select id="profession">
+            <option value="">Profesión</option>
+            <option>Abogado</option>
+            <option>Arquitecto</option>
+            <option>Ingeniero Civil</option>
+            <option>Ingeniero Eléctrico</option>
+            <option>Electricista</option>
+            <option>Plomero</option>
+            <option>Pintor</option>
+            <option>Pisero</option>
+            <option>Ebanista</option>
+            <option>Jardinero</option>
+            <option>Masajista</option>
+            <option>Chofer</option>
+            <option>Médico</option>
+            <option>Enfermero</option>
+            <option>Otro</option>
+          </select></div>
+        <div><label>Provincia</label><select id="province">
+            <option value="">Provincia</option>
+            <option>Azua</option><option>Bahoruco</option><option>Barahona</option><option>Dajabón</option><option>Distrito Nacional</option><option>Duarte</option><option>Elías Piña</option><option>El Seibo</option><option>Espaillat</option><option>Hato Mayor</option><option>Hermanas Mirabal</option><option>Independencia</option><option>La Altagracia</option><option>La Romana</option><option>La Vega</option><option>María Trinidad Sánchez</option><option>Monseñor Nouel</option><option>Monte Cristi</option><option>Monte Plata</option><option>Pedernales</option><option>Peravia</option><option>Puerto Plata</option><option>Samaná</option><option>San Cristóbal</option><option>San José de Ocoa</option><option>San Juan</option><option>San Pedro de Macorís</option><option>Sánchez Ramírez</option><option>Santiago</option><option>Santiago Rodríguez</option><option>Valverde</option><option>Santo Domingo</option>
+          </select></div>
+        <div class="full"><label>E-mail</label><input type="email" id="email" required></div>
+        <div><label>Contraseña</label><input type="password" id="password" required></div>
+        <div><label>Confirmar Contraseña</label><input type="password" id="confirm-password" required></div>
+        <button type="submit">Registrarse</button>
+      </form>
+    </section>
+    <div class="banner">Publicidad 2: Promoción especial</div>
+    <section id="perfiles">
+      <h2>Perfiles Registrados</h2>
+      <div class="cards" id="profiles"></div>
+    </section>
+    <div class="banner">Publicidad 3: Talleres y cursos destacados</div>
+    <section id="blog">
+      <h2>Blog y Debates</h2>
+      <div id="posts" class="cards"></div>
+      <form id="new-post-form" class="booking-form">
+        <div class="full"><label for="post-title">Título del Debate</label><input type="text" id="post-title" required></div>
+        <div class="full"><label for="post-content">Contenido</label><textarea id="post-content" rows="4" required></textarea></div>
+        <button type="submit">Crear Debate</button>
+      </form>
+    </section>
+    <div class="banner">Publicidad 4: No te pierdas nuestras conferencias</div>
+    <section id="eventos">
+      <h2>Eventos</h2>
+      <div id="calendar"></div>
+      <form id="new-event-form" class="booking-form">
+        <div class="full"><label for="event-title">Título del Evento</label><input type="text" id="event-title" required></div>
+        <div><label for="#event-date">Fecha</label><input type="date" id="event-date" required></div>
+        <div class="full"><label for="event-description">Descripción</label><textarea id="event
